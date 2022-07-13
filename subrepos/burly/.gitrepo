@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = git@github.com:ssorj/burly.git
+	branch = main
+	commit = 697eac79fa990a4231e82a11bdbe9fd3d1e75f29
+	parent = c703f238d36f5ad9efb22ab7751da9405b1dfb2d
+	method = merge
+	cmdver = 0.4.3
