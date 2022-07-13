@@ -1,3 +1,9 @@
+# Users of this script can override the troubleshooting URL
+if [ -z "${troubleshooting_url:-}" ]
+then
+    troubleshooting_url="https://github.com/ssorj/burly/blob/main/troubleshooting.md"
+fi
+
 # Make the local keyword work with ksh93 and POSIX-style functions
 case "${KSH_VERSION:-}" in
     *" 93"*)
@@ -334,7 +340,7 @@ check_writable_directories() {
     if [ -n "${unwritable_dirs}" ]
     then
         fail "Some install directories are not writable: ${unwritable_dirs%??}" \
-             "https://github.com/ssorj/persephone/blob/main/docs/troubleshooting.md#some-install-directories-are-not-writable"
+             "${troubleshooting_url}#some-install-directories-are-not-writable"
     fi
 }
 
@@ -359,7 +365,7 @@ check_required_programs() {
     if [ -n "${unavailable_programs}" ]
     then
         fail "Some required programs are not available: ${unavailable_programs%??}" \
-             "https://github.com/ssorj/persephone/blob/main/docs/troubleshooting.md#some-required-programs-are-not-available"
+             "${troubleshooting_url}#some-required-programs-are-not-available"
     fi
 }
 
@@ -369,7 +375,7 @@ check_required_program_sha512sum() {
     if ! command -v sha512sum && ! command -v shasum
     then
         fail "Some required programs are not available: sha512sum or shasum" \
-             "https://github.com/ssorj/persephone/blob/main/docs/troubleshooting.md#some-required-programs-are-not-available"
+             "${troubleshooting_url}#some-required-programs-are-not-available"
     fi
 }
 
@@ -394,7 +400,7 @@ check_required_ports() {
     if [ -n "${unavailable_ports}" ]
     then
         fail "Some required ports are in use by something else: ${unavailable_ports%??}" \
-             "https://github.com/ssorj/persephone/blob/main/docs/troubleshooting.md#some-required-ports-are-in-use-by-something-else"
+             "${troubleshooting_url}#some-required-ports-are-in-use-by-something-else"
     fi
 }
 
@@ -421,7 +427,7 @@ check_required_network_resources() {
     if [ -n "${unavailable_urls}" ]
     then
         fail "Some required network resources are not available: ${unavailable_urls%??}" \
-             "https://github.com/ssorj/persephone/blob/main/docs/troubleshooting.md#some-required-network-resources-are-not-available"
+             "${troubleshooting_url}#some-required-network-resources-are-not-available"
     fi
 }
 
@@ -431,7 +437,7 @@ check_java() {
     if ! java --version
     then
         fail "Java is available, but it is not working" \
-             "https://github.com/ssorj/persephone/blob/main/docs/troubleshooting.md#java-is-available-but-it-is-not-working"
+             "${troubleshooting_url}#java-is-available-but-it-is-not-working"
     fi
 }
 
@@ -492,14 +498,14 @@ fetch_latest_apache_release() {
         if ! run sha512sum -c "${release_file_checksum}"
         then
             fail "The checksum does not match the downloaded release archive" \
-                 "https://github.com/ssorj/persephone/blob/main/docs/troubleshooting.md#the-checksum-does-not-match-the-downloaded-release-archive"
+                 "${troubleshooting_url}#the-checksum-does-not-match-the-downloaded-release-archive"
         fi
     elif command -v shasum
     then
         if ! run shasum -a 512 -c "${release_file_checksum}"
         then
             fail "The checksum does not match the downloaded release archive" \
-                 "https://github.com/ssorj/persephone/blob/main/docs/troubleshooting.md#the-checksum-does-not-match-the-downloaded-release-archive"
+                 "${troubleshooting_url}#the-checksum-does-not-match-the-downloaded-release-archive"
         fi
     else
         assert false
