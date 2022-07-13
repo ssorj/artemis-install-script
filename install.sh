@@ -925,7 +925,7 @@ main() {
         print
         print "To uninstall Artemis, use:"
         print
-        print "    curl -f https://raw.githubusercontent.com/ssorj/persephone/main/artemis/uninstall.sh | sh"
+        print "    curl -f https://raw.githubusercontent.com/ssorj/artemis-install-script/main/uninstall.sh | sh"
         print
         print "To start the broker, use:"
         print
