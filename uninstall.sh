@@ -770,7 +770,7 @@ main() {
         print
         print "To install Artemis again, use:"
         print
-        print "    curl -f https://raw.githubusercontent.com/ssorj/persephone/main/artemis/install.sh | sh"
+        print "    curl -f https://raw.githubusercontent.com/ssorj/artemis-install-script/main/install.sh | sh"
         print
     } >&4 2>&4
 }
