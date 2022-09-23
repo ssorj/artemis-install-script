@@ -20,12 +20,11 @@
 
 @burly@
 
-# func <url-path> <output-dir> -> release_version=<version>, release_file=<file>
-fetch_latest_apache_release() {
-    local url_path="$1"
-    local output_dir="$2"
+# func <output-dir> -> release_version=<version>, release_file=<file>
+fetch_latest_artemis_release() {
+    local output_dir="$1"
 
-    assert string_is_match "${url_path}" "/*/"
+    assert string_is_match "/activemq/activemq-artemis/" "/*/"
     assert test -d "${output_dir}"
     assert program_is_available curl
     assert program_is_available awk
@@ -37,7 +36,7 @@ fetch_latest_apache_release() {
 
     log "Looking up the latest release version"
 
-    run curl -sf --show-error "https://dlcdn.apache.org${url_path}" \
+    run curl -sf --show-error "https://dlcdn.apache.org/activemq/activemq-artemis/" \
         | awk 'match($0, /[0-9]+\.[0-9]+\.[0-9]+/) { print substr($0, RSTART, RLENGTH) }' \
         | sort -t . -k1n -k2n -k3n \
         | tail -n 1 >| "${release_version_file}"
@@ -56,7 +55,7 @@ fetch_latest_apache_release() {
         log "Downloading the latest release"
 
         run curl -sf --show-error -o "${release_file}" \
-            "https://dlcdn.apache.org${url_path}${release_version}/${release_file_name}"
+            "https://dlcdn.apache.org/activemq/activemq-artemis/${release_version}/${release_file_name}"
     else
         log "Using the cached release archive"
     fi
@@ -66,7 +65,7 @@ fetch_latest_apache_release() {
     log "Downloading the checksum file"
 
     run curl -sf --show-error -o "${release_file_checksum}" \
-        "https://downloads.apache.org${url_path}${release_version}/${release_file_name}.sha512"
+        "https://downloads.apache.org/activemq/activemq-artemis/${release_version}/${release_file_name}.sha512"
 
     printf "Checksum file: %s\n" "${release_file_checksum}"
 
@@ -274,7 +273,7 @@ main() {
 
         print_section "Downloading and verifying the latest release"
 
-        fetch_latest_apache_release "/activemq/activemq-artemis/" "${work_dir}"
+        fetch_latest_artemis_release "${work_dir}"
 
         print_result "OK"
 
@@ -409,7 +408,7 @@ main() {
         print
         print "    $(bold "artemis run")"
         print
-    } >&4 2>&4
+    } >&6 2>&6
 }
 
 main "$@"

@@ -176,7 +176,7 @@ main() {
         print
         print "    curl -f https://raw.githubusercontent.com/ssorj/persephone/main/artemis/install.sh | sh"
         print
-    } >&4 2>&4
+    } >&6 2>&6
 }
 
 main "$@"

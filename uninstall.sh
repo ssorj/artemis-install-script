@@ -40,7 +40,7 @@ then
 fi
 
 # This is required to preserve the Windows drive letter in the
-# path to HOME.
+# path to HOME
 case "$(uname)" in
     CYGWIN*)
         HOME="$(cygpath --mixed --windows "${HOME}")"
@@ -83,7 +83,7 @@ await_port_is_active() {
 
     log "Waiting for port ${port} to open"
 
-    while ! port_is_active 61616
+    while ! port_is_active "${port}"
     do
         i=$((i + 1))
 
@@ -104,7 +104,7 @@ await_port_is_free() {
 
     log "Waiting for port ${port} to close"
 
-    while port_is_active 61616
+    while port_is_active "${port}"
     do
         i=$((i + 1))
 
@@ -201,7 +201,7 @@ print() {
     if [ "$#" = 0 ]
     then
         printf "
-" >&3
+" >&5
         printf -- "--
 "
         return
@@ -211,11 +211,11 @@ print() {
     then
         shift
 
-        printf "   %s" "$1" >&3
+        printf "   %s" "$1" >&5
         printf -- "-- %s" "$1"
     else
         printf "   %s
-" "$1" >&3
+" "$1" >&5
         printf -- "-- %s
 " "$1"
     fi
@@ -224,7 +224,7 @@ print() {
 print_section() {
     printf "== %s ==
 
-" "$(bold "$1")" >&3
+" "$(bold "$1")" >&5
     printf "== %s
 " "$1"
 }
@@ -232,27 +232,35 @@ print_section() {
 print_result() {
     printf "   %s
 
-" "$(green "$1")" >&3
+" "$(green "$1")" >&5
     log "Result: $(green "$1")"
 }
 
 fail() {
     printf "   %s %s
 
-" "$(red "ERROR:")" "$1" >&3
+" "$(red "ERROR:")" "$1" >&5
     log "$(red "ERROR:") $1"
 
     if [ -n "${2:-}" ]
     then
         printf "   See %s
 
-" "$2" >&3
+" "$2" >&5
         log "See $2"
     fi
 
     suppress_trouble_report=1
 
     exit 1
+}
+
+generate_password() {
+    assert test -e /dev/urandom
+    assert program_is_available head
+    assert program_is_available tr
+
+    head -c 1024 /dev/urandom | LC_ALL=C tr -dc 'a-z0-9' | head -c 16
 }
 
 enable_strict_mode() {
@@ -330,11 +338,11 @@ init_logging() {
         mv "${log_file}" "${log_file}.$(date +%Y-%m-%d).$(random_number)"
     fi
 
-    # Use file descriptor 3 for the default display output
-    exec 3>&1
+    # Use file descriptor 5 for the default display output
+    exec 5>&1
 
-    # Use file descriptor 4 for logging and command output
-    exec 4>&2
+    # Use file descriptor 6 for logging and command output
+    exec 6>&2
 
     # Save stdout and stderr before redirection
     exec 7>&1
@@ -347,9 +355,9 @@ init_logging() {
     # XXX Use tee to capture to the log file at the same time?
     if [ -n "${verbose}" ]
     then
-        exec 3> /dev/null
+        exec 5> /dev/null
     else
-        exec 4> "${log_file}"
+        exec 6> "${log_file}"
     fi
 }
 
@@ -488,84 +496,6 @@ check_java() {
     fi
 }
 
-# func <url-path> <output-dir> -> release_version=<version>, release_file=<file>
-fetch_latest_apache_release() {
-    local url_path="$1"
-    local output_dir="$2"
-
-    assert string_is_match "${url_path}" "/*/"
-    assert test -d "${output_dir}"
-    assert program_is_available curl
-    assert program_is_available awk
-    assert program_is_available sort
-    assert program_is_available tail
-    program_is_available sha512sum || program_is_available shasum || assert false
-
-    local release_version_file="${output_dir}/release-version.txt"
-
-    log "Looking up the latest release version"
-
-    run curl -sf --show-error "https://dlcdn.apache.org${url_path}" \
-        | awk 'match($0, /[0-9]+\.[0-9]+\.[0-9]+/) { print substr($0, RSTART, RLENGTH) }' \
-        | sort -t . -k1n -k2n -k3n \
-        | tail -n 1 >| "${release_version_file}"
-
-    release_version="$(cat "${release_version_file}")"
-
-    printf "Release version: %s
-" "${release_version}"
-    printf "Release version file: %s
-" "${release_version_file}"
-
-    local release_file_name="apache-artemis-${release_version}-bin.tar.gz"
-    release_file="${output_dir}/${release_file_name}"
-    local release_file_checksum="${release_file}.sha512"
-
-    if [ ! -e "${release_file}" ]
-    then
-        log "Downloading the latest release"
-
-        run curl -sf --show-error -o "${release_file}" \
-            "https://dlcdn.apache.org/activemq/activemq-artemis/${release_version}/${release_file_name}"
-    else
-        log "Using the cached release archive"
-    fi
-
-    printf "Archive file: %s
-" "${release_file}"
-
-    log "Downloading the checksum file"
-
-    run curl -sf --show-error -o "${release_file_checksum}" \
-        "https://downloads.apache.org/activemq/activemq-artemis/${release_version}/${release_file_name}.sha512"
-
-    printf "Checksum file: %s
-" "${release_file_checksum}"
-
-    log "Verifying the release archive"
-
-    if command -v sha512sum
-    then
-        if ! run sha512sum -c "${release_file_checksum}"
-        then
-            fail "The checksum does not match the downloaded release archive" \
-                 "${troubleshooting_url}#the-checksum-does-not-match-the-downloaded-release-archive"
-        fi
-    elif command -v shasum
-    then
-        if ! run shasum -a 512 -c "${release_file_checksum}"
-        then
-            fail "The checksum does not match the downloaded release archive" \
-                 "${troubleshooting_url}#the-checksum-does-not-match-the-downloaded-release-archive"
-        fi
-    else
-        assert false
-    fi
-
-    assert test -n "${release_version}"
-    assert test -f "${release_file}"
-}
-
 # func <backup-dir> <config-dir> <share-dir> <state-dir> [<bin-file>...]
 save_backup() {
     local backup_dir="$1"
@@ -612,14 +542,6 @@ save_backup() {
     done
 
     assert test -d "${backup_dir}"
-}
-
-generate_password() {
-    assert test -e /dev/urandom
-    assert program_is_available head
-    assert program_is_available tr
-
-    head -c 1024 /dev/urandom | LC_ALL=C tr -dc 'a-z0-9' | head -c 16
 }
 
 usage() {
@@ -778,7 +700,7 @@ main() {
         print
         print "    curl -f https://raw.githubusercontent.com/ssorj/persephone/main/artemis/install.sh | sh"
         print
-    } >&4 2>&4
+    } >&6 2>&6
 }
 
 main "$@"

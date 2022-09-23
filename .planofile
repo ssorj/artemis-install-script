@@ -1,8 +1,8 @@
 # XXX For the which problem
-CYGWIN = call("uname").startswith("CYGWIN")
+#CYGWIN = call("uname").startswith("CYGWIN")
 
 @command
-def build(app):
+def build():
     burly = read("burly.sh").strip()
 
     install_sh_in = read("install.sh.in")
@@ -15,11 +15,11 @@ def build(app):
     write("uninstall.sh", uninstall_sh)
 
 @command
-def test(app, shell="sh", verbose=False, debug=False):
-    if not CYGWIN:
-        check_program(shell)
+def test(shell="sh", verbose=False, debug=False):
+    # if not CYGWIN:
+    check_program(shell)
 
-    build(app)
+    build()
 
     if debug:
         ENV["DEBUG"] = "1"
@@ -32,18 +32,17 @@ def test(app, shell="sh", verbose=False, debug=False):
             del ENV["DEBUG"]
 
 @command
-def big_test(app, verbose=False, debug=False):
-    test(app, verbose=True, debug=debug)
-    test(app, verbose=False, debug=debug)
+def big_test(verbose=False, debug=False):
+    test(verbose=True, debug=debug)
+    test(verbose=False, debug=debug)
 
-    test(app, verbose=verbose, debug=True)
-    test(app, verbose=verbose, debug=False)
+    test(verbose=verbose, debug=True)
+    test(verbose=verbose, debug=False)
 
     for shell in "ash", "bash", "dash", "ksh", "mksh", "yash", "zsh":
-        if CYGWIN or not which(shell):
-            continue
-
-        test(app, shell=shell, verbose=verbose, debug=debug)
+        # if CYGWIN or not which(shell):
+        if which(shell):
+            test(shell=shell, verbose=verbose, debug=debug)
 
     with working_env():
         run(f"sh install.sh") # No existing installation and no existing backup
@@ -53,9 +52,9 @@ def big_test(app, verbose=False, debug=False):
         run(f"sh uninstall.sh")
 
 @command
-def lint(app):
+def lint():
     check_program("shellcheck")
 
-    build(app)
+    build()
 
     run("shellcheck --enable all --exclude SC3043 install.sh uninstall.sh")
