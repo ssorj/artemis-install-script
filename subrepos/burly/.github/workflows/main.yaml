@@ -20,15 +20,15 @@ jobs:
       - uses: cygwin/cygwin-install-action@master
         with:
           packages: nc
-      - run: python plano big-test --verbose
+      - run: python plano test
   fedora:
     runs-on: ubuntu-latest
     container: fedora:latest
     steps:
       - uses: actions/checkout@v3
-      - run: dnf -y install busybox curl dash ksh mksh nc python /bin/ps sudo tar yash zsh java-17-openjdk-headless
+      - run: dnf -y install bats busybox curl dash ksh mksh nc python /bin/ps sudo tar yash zsh java-17-openjdk-headless
       - run: cd /usr/bin && ln -s busybox ash
-      - run: ./plano big-test --verbose
+      - run: ./plano test
   macos:
     runs-on: macos-latest
     steps:
@@ -40,12 +40,13 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.x"
-      - run: ./plano big-test --verbose
+      - run: brew install bats-core
+      - run: ./plano test
   ubuntu:
     runs-on: ubuntu-latest
     container: ubuntu:latest
     steps:
       - uses: actions/checkout@v3
       - run: apt-get -qq update
-      - run: apt-get -qq install curl netcat python3 sudo openjdk-17-jre-headless
-      - run: ./plano big-test --verbose
+      - run: apt-get -qq install bats curl netcat python3 sudo openjdk-17-jre-headless
+      - run: ./plano test

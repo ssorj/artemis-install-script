@@ -18,7 +18,90 @@
 # under the License.
 #
 
-@burly@
+# Make the local keyword work with ksh93 and POSIX-style functions
+case "${KSH_VERSION:-}" in
+    *" 93"*)
+        alias local="typeset -x"
+        ;;
+    *)
+        ;;
+esac
+
+. ./burly.sh
+
+# func <url-path> <output-dir> -> release_version=<version>, release_file=<file>
+fetch_latest_apache_release() {
+    local url_path="$1"
+    local output_dir="$2"
+
+    assert string_is_match "${url_path}" "/*/"
+    assert test -d "${output_dir}"
+    assert program_is_available curl
+    assert program_is_available awk
+    assert program_is_available sort
+    assert program_is_available tail
+    program_is_available sha512sum || program_is_available shasum || assert false
+
+    local release_version_file="${output_dir}/release-version.txt"
+
+    log "Looking up the latest release version"
+
+    run curl -sf --show-error "https://dlcdn.apache.org${url_path}" \
+        | awk 'match($0, /[0-9]+\.[0-9]+\.[0-9]+/) { print substr($0, RSTART, RLENGTH) }' \
+        | sort -t . -k1n -k2n -k3n \
+        | tail -n 1 >| "${release_version_file}"
+
+    release_version="$(cat "${release_version_file}")"
+
+    printf "Release version: %s\n" "${release_version}"
+    printf "Release version file: %s\n" "${release_version_file}"
+
+    local release_file_name="apache-artemis-${release_version}-bin.tar.gz"
+    release_file="${output_dir}/${release_file_name}"
+    local release_file_checksum="${release_file}.sha512"
+
+    if [ ! -e "${release_file}" ]
+    then
+        log "Downloading the latest release"
+
+        run curl -sf --show-error -o "${release_file}" \
+            "https://dlcdn.apache.org${url_path}${release_version}/${release_file_name}"
+    else
+        log "Using the cached release archive"
+    fi
+
+    printf "Archive file: %s\n" "${release_file}"
+
+    log "Downloading the checksum file"
+
+    run curl -sf --show-error -o "${release_file_checksum}" \
+        "https://downloads.apache.org${url_path}${release_version}/${release_file_name}.sha512"
+
+    printf "Checksum file: %s\n" "${release_file_checksum}"
+
+    log "Verifying the release archive"
+
+    if command -v sha512sum
+    then
+        if ! run sha512sum -c "${release_file_checksum}"
+        then
+            fail "The checksum does not match the downloaded release archive" \
+                 "${troubleshooting_url}#the-checksum-does-not-match-the-downloaded-release-archive"
+        fi
+    elif command -v shasum
+    then
+        if ! run shasum -a 512 -c "${release_file_checksum}"
+        then
+            fail "The checksum does not match the downloaded release archive" \
+                 "${troubleshooting_url}#the-checksum-does-not-match-the-downloaded-release-archive"
+        fi
+    else
+        assert false
+    fi
+
+    assert test -n "${release_version}"
+    assert test -f "${release_file}"
+}
 
 main() {
     enable_strict_mode
@@ -28,7 +111,6 @@ main() {
         enable_debug_mode
     fi
 
-    # XXX Add an option for verbose mode
     local verbose=
 
     local artemis_bin_dir="${HOME}/.local/bin"
@@ -118,7 +200,7 @@ main() {
             --verbose
 
         print_result "OK"
-    } >&4 2>&4
+    } >&6 2>&6
 }
 
 main "$@"
