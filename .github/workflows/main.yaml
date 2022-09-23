@@ -20,7 +20,7 @@ jobs:
       - uses: cygwin/cygwin-install-action@master
         with:
           packages: nc
-      - run: python plano big-test --verbose
+      - run: SHELLOPTS=$SHELLOPTS:igncr python plano big-test --verbose
         shell: C:\cygwin\bin\bash.exe -o igncr '{0}'
   fedora:
     runs-on: ubuntu-latest
