@@ -544,11 +544,42 @@ save_backup() {
     assert test -d "${backup_dir}"
 }
 
+usage() {
+    local error="${1:-}"
+
+    if [ -n "${error}" ]
+    then
+        printf "%b %s\n\n" "$(red "ERROR:")" "${*}"
+    fi
+
+    cat <<EOF
+Usage: ${0} [-hvy] [-s <scheme>]
+
+A script that installs ActiveMQ Artemis
+
+Options:
+  -h            Print this help text and exit
+  -i            Operate in interactive mode
+  -s <scheme>   Select an installation scheme (default "home")
+  -v            Print detailed logging to the console
+
+Installation schemes:
+  home          Install to ~/.local and ~/.config
+  opt           Install to /opt, /var/opt, and /etc/opt
+EOF
+
+    if [ -n "${error}" ]
+    then
+        exit 1
+    fi
+
+    exit 0
+}
+
 # func <output-dir> -> release_version=<version>, release_file=<file>
 fetch_latest_artemis_release() {
     local output_dir="$1"
 
-    assert string_is_match "/activemq/activemq-artemis/" "/*/"
     assert test -d "${output_dir}"
     assert program_is_available curl
     assert program_is_available awk
@@ -615,38 +646,6 @@ fetch_latest_artemis_release() {
 
     assert test -n "${release_version}"
     assert test -f "${release_file}"
-}
-
-usage() {
-    local error="${1:-}"
-
-    if [ -n "${error}" ]
-    then
-        printf "%b %s\n\n" "$(red "ERROR:")" "${*}"
-    fi
-
-    cat <<EOF
-Usage: ${0} [-hvy] [-s <scheme>]
-
-A script that installs ActiveMQ Artemis
-
-Options:
-  -h            Print this help text and exit
-  -i            Operate in interactive mode
-  -s <scheme>   Select an installation scheme (default "home")
-  -v            Print detailed logging to the console
-
-Installation schemes:
-  home          Install to ~/.local and ~/.config
-  opt           Install to /opt, /var/opt, and /etc/opt
-EOF
-
-    if [ -n "${error}" ]
-    then
-        exit 1
-    fi
-
-    exit 0
 }
 
 # func <script-file> <artemis-instance-dir>

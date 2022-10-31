@@ -56,7 +56,6 @@ EOF
 fetch_latest_artemis_release() {
     local output_dir="$1"
 
-    assert string_is_match "/activemq/activemq-artemis/" "/*/"
     assert test -d "${output_dir}"
     assert program_is_available curl
     assert program_is_available awk
