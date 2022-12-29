@@ -1,3 +1,5 @@
+from plano import *
+
 @command
 def build():
     burly = read("burly.sh").strip()
@@ -10,6 +12,10 @@ def build():
 
     write("install.sh", install_sh)
     write("uninstall.sh", uninstall_sh)
+
+@command
+def clean():
+    remove("__pycache__")
 
 @command
 def test(shell="sh", verbose=False, debug=False):
