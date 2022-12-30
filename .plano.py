@@ -2,20 +2,72 @@ from plano import *
 
 @command
 def build():
-    burly = read("burly.sh").strip()
+    burly_in = read("burly.sh").strip()
+
+    boilerplate = extract_boilerplate(burly_in)
+    functions = extract_functions(burly_in)
+
+    function_names = [
+        "assert",
+        "port_is_active",
+        "await_port_is_active",
+        "await_port_is_free",
+        "program_is_available",
+        "check_java",
+        "check_required_ports",
+        "check_required_programs",
+        "check_required_program_sha512sum",
+        "check_required_network_resources",
+        "check_writable_directories",
+        "init_logging", "handle_exit",
+        "enable_debug_mode",
+        "enable_strict_mode",
+        "run", "log", "fail",
+        "print", "print_result", "print_section",
+        "green", "yellow", "red", "bold",
+        "save_backup",
+        "ask_to_proceed",
+        "extract_archive",
+        "generate_password",
+        "random_number",
+    ]
+
+    burly_out = [boilerplate]
+
+    for name in function_names:
+        burly_out.append(functions[name])
 
     install_sh_in = read("install.sh.in")
-    install_sh = replace(install_sh_in, "@burly@", burly)
+    install_sh = replace(install_sh_in, "@burly@", "\n".join(burly_out))
 
-    uninstall_sh_in = read("uninstall.sh.in")
-    uninstall_sh = replace(uninstall_sh_in, "@burly@", burly)
+    # uninstall_sh_in = read("uninstall.sh.in")
+    # uninstall_sh = replace(uninstall_sh_in, "@burly@", burly)
 
     write("install.sh", install_sh)
-    write("uninstall.sh", uninstall_sh)
+    # write("uninstall.sh", uninstall_sh)
+
+def extract_boilerplate(code):
+    import re
+
+    boilerplate = re.search(r"# BEGIN BOILERPLATE\n(.*?)\n# END BOILERPLATE", code, re.DOTALL)
+
+    if boilerplate:
+        return boilerplate.group(1).strip()
+
+def extract_functions(code):
+    import re
+
+    functions = dict()
+    matches = re.finditer(r"\n(\w+)\s*\(\)\s+{\n.*?\n}", code, re.DOTALL)
+
+    for match in matches:
+        functions[match.group(1)] = match.group(0)
+
+    return functions
 
 @command
 def clean():
-    remove("__pycache__")
+    remove(find(".", "__pycache__"))
 
 @command
 def test(shell="sh", verbose=False, debug=False):
