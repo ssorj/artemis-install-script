@@ -18,7 +18,8 @@
   and terminate them.
 
     ~~~
-    lsof -i -P | grep <port>
+    lsof -PiTCP -sTCP:LISTEN | grep ":<port>"
+    netstat -an | grep LISTEN | grep ":<port>"
     ~~~
 
 ## Some required network resources are not available
