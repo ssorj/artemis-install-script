@@ -18,6 +18,8 @@
 # under the License.
 #
 
+troubleshooting_url="https://github.com/ssorj/burly/blob/main/troubleshooting.md"
+
 # Make the local keyword work with ksh93 and POSIX-style functions
 case "${KSH_VERSION:-}" in
     *" 93"*)

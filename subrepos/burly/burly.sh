@@ -1,16 +1,29 @@
-# Users of this script can override the troubleshooting URL
-if [ -z "${troubleshooting_url:-}" ]
-then
-    troubleshooting_url="https://github.com/ssorj/burly/blob/main/troubleshooting.md"
-fi
+#!/bin/sh
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+
+# BEGIN BOILERPLATE
 
 # Make the local keyword work with ksh93 and POSIX-style functions
 case "${KSH_VERSION:-}" in
-    *" 93"*)
-        alias local="typeset -x"
-        ;;
-    *)
-        ;;
+    *" 93"*) alias local="typeset -x" ;;
+    *) ;;
 esac
 
 # Make zsh emulate the Bourne shell
@@ -22,14 +35,12 @@ fi
 # This is required to preserve the Windows drive letter in the
 # path to HOME
 case "$(uname)" in
-    CYGWIN*)
-        HOME="$(cygpath --mixed --windows "${HOME}")"
-        ;;
-    *)
-        ;;
+    CYGWIN*) HOME="$(cygpath --mixed --windows "${HOME}")" ;;
+    *) ;;
 esac
 
-# func <program>
+# END BOILERPLATE
+
 program_is_available() {
     local program="${1}"
 
@@ -38,7 +49,6 @@ program_is_available() {
     command -v "${program}"
 }
 
-# func <port>
 port_is_active() {
     local port="$1"
 
@@ -46,15 +56,14 @@ port_is_active() {
 
     if nc -z localhost "${port}"
     then
-        printf "Port %s is active\n" "${port}"
+        printf "Port %s is active\\n" "${port}"
         return 0
     else
-        printf "Port %s is free\n" "${port}"
+        printf "Port %s is free\\n" "${port}"
         return 1
     fi
 }
 
-# func <port>
 await_port_is_active() {
     local port="$1"
     local i=0
@@ -75,7 +84,6 @@ await_port_is_active() {
     done
 }
 
-# func <port>
 await_port_is_free() {
     local port="$1"
     local i=0
@@ -96,7 +104,6 @@ await_port_is_free() {
     done
 }
 
-# func <string> <glob>
 string_is_match() {
     local string="$1"
     local glob="$2"
@@ -105,12 +112,8 @@ string_is_match() {
 
     # shellcheck disable=SC2254 # We want the glob
     case "${string}" in
-        ${glob})
-            return 0
-            ;;
-        *)
-            return 1
-            ;;
+        ${glob}) return 0 ;;
+        *)       return 1 ;;
     esac
 }
 
@@ -118,7 +121,6 @@ random_number() {
     printf "%s%s" "$(date +%s)" "$$"
 }
 
-# func <archive-file> <output-dir>
 extract_archive() {
     local archive_file="$1"
     local output_dir="$2"
@@ -142,17 +144,17 @@ assert() {
 
     if ! "$@" > /dev/null 2>&1
     then
-        printf "%s %s assert %s\n" "$(red "ASSERTION FAILED:")" "$(yellow "${location}")" "$*" >&2
+        printf "%s %s assert %s\\n" "$(red "ASSERTION FAILED:")" "$(yellow "${location}")" "$*" >&2
         exit 1
     fi
 }
 
 log() {
-    printf -- "-- %s\n" "$1"
+    printf -- "-- %s\\n" "$1"
 }
 
 run() {
-    printf -- "-- Running '%s'\n" "$*" >&2
+    printf -- "-- Running '%s'\\n" "$*" >&2
     "$@"
 }
 
@@ -175,40 +177,47 @@ yellow() {
 print() {
     if [ "$#" = 0 ]
     then
-        printf "\n" >&5
-        printf -- "--\n"
+        printf "\\n" >&5
+        printf -- "--\\n"
         return
     fi
 
-    if [ "$1" = "-n" ]
-    then
-        shift
-
-        printf "   %s" "$1" >&5
-        printf -- "-- %s" "$1"
-    else
-        printf "   %s\n" "$1" >&5
-        printf -- "-- %s\n" "$1"
-    fi
+    printf "   %s\\n" "$1" >&5
+    printf -- "-- %s\\n" "$1"
 }
 
 print_section() {
-    printf "== %s ==\n\n" "$(bold "$1")" >&5
-    printf "== %s\n" "$1"
+    printf "== %s ==\\n\\n" "$(bold "$1")" >&5
+    printf "== %s\\n" "$1"
 }
 
 print_result() {
-    printf "   %s\n\n" "$(green "$1")" >&5
+    printf "   %s\\n\\n" "$(green "$1")" >&5
     log "Result: $(green "$1")"
 }
 
+ask_to_proceed() {
+    while true
+    do
+        printf "   Do you want to proceed? (yes or no): " >&5
+        printf -- "-- Do you want to proceed? (yes or no): "
+        read -r response
+
+        case "${response}" in
+            yes) break ;;
+            no)  exit  ;;
+            *) ;;
+        esac
+    done
+}
+
 fail() {
-    printf "   %s %s\n\n" "$(red "ERROR:")" "$1" >&5
+    printf "   %s %s\\n\\n" "$(red "ERROR:")" "$1" >&5
     log "$(red "ERROR:") $1"
 
     if [ -n "${2:-}" ]
     then
-        printf "   See %s\n\n" "$2" >&5
+        printf "   See %s\\n\\n" "$2" >&5
         log "See $2"
     fi
 
@@ -222,7 +231,7 @@ generate_password() {
     assert program_is_available head
     assert program_is_available tr
 
-    head -c 1024 /dev/urandom | LC_ALL=C tr -dc 'a-z0-9' | head -c 16
+    head -c 1024 /dev/urandom | LC_ALL=C tr -dc "a-z0-9" | head -c 16
 }
 
 enable_strict_mode() {
@@ -268,14 +277,14 @@ handle_exit() {
     then
         if [ -n "${verbose}" ]
         then
-            printf "%s Something went wrong.\n\n" "$(red "TROUBLE!")"
+            printf "%s Something went wrong.\\n\\n" "$(red "TROUBLE!")"
         else
-            printf "   %s Something went wrong.\n\n" "$(red "TROUBLE!")"
-            printf "== Log ==\n\n"
+            printf "   %s Something went wrong.\\n\\n" "$(red "TROUBLE!")"
+            printf "== Log ==\\n\\n"
 
             sed -e "s/^/  /" < "${log_file}" || :
 
-            printf "\n"
+            printf "\\n"
         fi
     fi
 }
@@ -306,8 +315,6 @@ init_logging() {
     # If verbose, suppress the default display output and log
     # everything to the console. Otherwise, capture logging and
     # command output to the log file.
-    #
-    # XXX Use tee to capture to the log file at the same time?
     if [ -n "${verbose}" ]
     then
         exec 5> /dev/null
@@ -316,7 +323,6 @@ init_logging() {
     fi
 }
 
-# func [<dir>...]
 check_writable_directories() {
     log "Checking for permission to write to the install directories"
 
@@ -338,9 +344,9 @@ check_writable_directories() {
 
         if [ -w "${base_dir}" ]
         then
-            printf "Directory '%s' is writable\n" "${base_dir}"
+            printf "Directory '%s' is writable\\n" "${base_dir}"
         else
-            printf "Directory '%s' is not writeable\n" "${base_dir}"
+            printf "Directory '%s' is not writeable\\n" "${base_dir}"
             unwritable_dirs="${unwritable_dirs}${base_dir}, "
         fi
     done
@@ -352,7 +358,6 @@ check_writable_directories() {
     fi
 }
 
-# func [<program>...]
 check_required_programs() {
     log "Checking for required programs"
 
@@ -387,7 +392,6 @@ check_required_program_sha512sum() {
     fi
 }
 
-# func [<port>...]
 check_required_ports() {
     log "Checking for required ports"
 
@@ -412,7 +416,6 @@ check_required_ports() {
     fi
 }
 
-# func [<url>...]
 check_required_network_resources() {
     log "Checking for required network resources"
 
@@ -449,7 +452,6 @@ check_java() {
     fi
 }
 
-# func <backup-dir> <config-dir> <share-dir> <state-dir> [<bin-file>...]
 save_backup() {
     local backup_dir="$1"
     local config_dir="$2"
