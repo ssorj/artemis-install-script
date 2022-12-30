@@ -233,22 +233,7 @@ main() {
             print "Run \"install.sh -h\" to see the installation options."
             print
 
-            while true
-            do
-                print -n "Do you want to proceed? (yes or no): "
-                read -r response
-
-                case "${response}" in
-                    yes)
-                        break
-                        ;;
-                    no)
-                        exit
-                        ;;
-                    *)
-                        ;;
-                esac
-            done
+            ask_to_proceed
 
             print
         fi
@@ -395,15 +380,15 @@ main() {
 
         print "If you are trying Artemis for the first time, see the getting started guide:"
         print
-        print "    https://github.com/ssorj/persephone/blob/main/docs/getting-started.md"
+        print "    https://github.com/ssorj/artemis-install-script/blob/main/docs/getting-started.md"
         print
         print "If you are preparing Artemis for production use, see the deployment guide:"
         print
-        print "    https://github.com/ssorj/persephone/blob/main/docs/deployment.md"
+        print "    https://github.com/ssorj/artemis-install-script/blob/main/docs/deployment.md"
         print
         print "To uninstall Artemis, use:"
         print
-        print "    curl -f https://raw.githubusercontent.com/ssorj/artemis-install-script/main/uninstall.sh | sh"
+        print "    curl https://raw.githubusercontent.com/ssorj/artemis-install-script/main/uninstall.sh | sh"
         print
         print "To start the broker, use:"
         print
