@@ -86,6 +86,21 @@ def test(shell="sh", verbose=False, debug=False):
             del ENV["DEBUG"]
 
 @command
+def test_getting_started(shell="sh", verbose=False, debug=False):
+    check_program("curl")
+    check_program("pip")
+
+    run("curl https://raw.githubusercontent.com/ssorj/artemis-install-script/main/install.sh | sh", shell=True)
+    run("pip install --index-url https://test.pypi.org/simple/ ssorj-qtools")
+
+    with start("artemis run"):
+        await_port(5672)
+
+        run("artemis queue create --name greetings --address greetings --auto-create-address --anycast --silent")
+        run("qsend amqp://localhost/greetings hello")
+        run("qreceive amqp://localhost/greetings --count 1")
+
+@command
 def big_test(verbose=False, debug=False):
     test(verbose=True, debug=debug)
     test(verbose=False, debug=debug)
