@@ -120,6 +120,29 @@ main() {
             mv "${backup_dir}" "${backup_dir}.$(date +%Y-%m-%d).$(random_number)"
         fi
 
+        if [ -n "${interactive}" ]
+        then
+            print_section "Preparing to uninstall"
+
+            print "This script will uninstall ActiveMQ Artemis from the following locations:"
+            print
+            print "    CLI tools:         ${artemis_bin_dir}"
+            print "    Config files:      ${artemis_config_dir}"
+            print "    Artemis home:      ${artemis_home_dir}"
+            print "    Artemis instance:  ${artemis_instance_dir}"
+            print
+            print "It will save a backup of the existing installation to:"
+            print
+            print "    ${backup_dir}"
+            print
+            print "Run \"uninstall.sh -h\" to see the uninstall options."
+            print
+
+            ask_to_proceed
+
+            print
+        fi
+
         print_section "Checking prerequisites"
 
         if [ ! -e "${artemis_config_dir}" ] && [ ! -e "${artemis_home_dir}" ] && [ ! -e "${artemis_instance_dir}" ]
@@ -144,23 +167,28 @@ main() {
 
         print_section "Removing the existing installation"
 
-        if [ -e "${artemis_bin_dir}/artemis" ]; then
+        if [ -e "${artemis_bin_dir}/artemis" ]
+        then
             rm "${artemis_bin_dir}/artemis"
         fi
 
-        if [ -e "${artemis_bin_dir}/artemis-service" ]; then
+        if [ -e "${artemis_bin_dir}/artemis-service" ]
+        then
             rm "${artemis_bin_dir}/artemis-service"
         fi
 
-        if [ -e "${artemis_config_dir}" ]; then
+        if [ -e "${artemis_config_dir}" ]
+        then
             rm -rf "${artemis_config_dir}"
         fi
 
-        if [ -e "${artemis_home_dir}" ]; then
+        if [ -e "${artemis_home_dir}" ]
+        then
             rm -rf "${artemis_home_dir}"
         fi
 
-        if [ -e "${artemis_instance_dir}" ]; then
+        if [ -e "${artemis_instance_dir}" ]
+        then
             rm -rf "${artemis_instance_dir}"
         fi
 

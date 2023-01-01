@@ -57,6 +57,7 @@ def build():
     uninstall_function_names = core_function_names + [
         "check_writable_directories",
         "save_backup",
+        "ask_to_proceed",
     ]
 
     burly_out = [boilerplate]
