@@ -18,6 +18,8 @@
 # under the License.
 #
 
+troubleshooting_url="https://github.com/ssorj/artemis-install-script/blob/main/troubleshooting.md"
+
 @burly@
 
 usage() {
