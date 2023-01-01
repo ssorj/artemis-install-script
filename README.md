@@ -1,5 +1,7 @@
 # Artemis install script
 
+[![main](https://github.com/ssorj/artemis-install-script/actions/workflows/main.yaml/badge.svg)](https://github.com/ssorj/artemis-install-script/actions/workflows/main.yaml)
+
 ## Install Artemis
 
 ~~~ shell
