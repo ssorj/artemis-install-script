@@ -17,6 +17,8 @@
 # under the License.
 #
 
+import re
+
 from plano import *
 
 @command
@@ -80,16 +82,12 @@ def build():
     write("uninstall.sh", uninstall_sh)
 
 def extract_boilerplate(code):
-    import re
-
     boilerplate = re.search(r"# BEGIN BOILERPLATE\n(.*?)\n# END BOILERPLATE", code, re.DOTALL)
 
     if boilerplate:
         return boilerplate.group(1).strip()
 
 def extract_functions(code):
-    import re
-
     functions = dict()
     matches = re.finditer(r"\n(\w+)\s*\(\)\s+{\n.*?\n}", code, re.DOTALL)
 

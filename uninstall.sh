@@ -399,11 +399,6 @@ main() {
     init_logging "${log_file}" "${verbose}"
 
     {
-        if [ -e "${backup_dir}" ]
-        then
-            mv "${backup_dir}" "${backup_dir}.$(date +%Y-%m-%d).$(random_number)"
-        fi
-
         if [ -n "${interactive}" ]
         then
             print_section "Preparing to uninstall"
@@ -442,6 +437,11 @@ main() {
         print_result "OK"
 
         print_section "Saving the existing installation to a backup"
+
+        if [ -e "${backup_dir}" ]
+        then
+            mv "${backup_dir}" "${backup_dir}.$(date +%Y-%m-%d).$(random_number)"
+        fi
 
         save_backup "${backup_dir}" \
                     "${artemis_config_dir}" "${artemis_home_dir}" "${artemis_instance_dir}" \
@@ -488,7 +488,7 @@ main() {
         print
         print "To install Artemis again, use:"
         print
-        print "    curl -f https://raw.githubusercontent.com/ssorj/persephone/main/artemis/install.sh | sh"
+        print "    curl https://raw.githubusercontent.com/ssorj/persephone/main/artemis/install.sh | sh"
         print
     } >&6 2>&6
 }
