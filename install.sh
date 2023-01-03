@@ -625,21 +625,11 @@ main() {
     while getopts :his:v option
     do
         case "${option}" in
-            h)
-                usage
-                ;;
-            i)
-                interactive=1
-                ;;
-            s)
-                scheme="${OPTARG}"
-                ;;
-            v)
-                verbose=1
-                ;;
-            *)
-                usage "Unknown option: ${OPTARG}"
-                ;;
+            h) usage              ;;
+            i) interactive=1      ;;
+            s) scheme="${OPTARG}" ;;
+            v) verbose=1          ;;
+            *) usage "Unknown option: ${OPTARG}" ;;
         esac
     done
 
